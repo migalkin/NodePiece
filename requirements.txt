@@ -1,0 +1,13 @@
+torch==1.7.1
+pykeen==1.0.5
+click
+torch-geometric==1.6.3
+torch_sparse==0.6.8
+torch-scatter==2.0.5
+torch-cluster==1.5.8
+torch-spline-conv==1.2.0
+pystow==0.1.0
+einops
+python-igraph
+tqdm
+wandb
