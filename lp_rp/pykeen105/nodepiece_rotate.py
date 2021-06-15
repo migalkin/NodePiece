@@ -218,10 +218,7 @@ class NodePieceRotate(Model):
             anc_embs = anc_embs.view(anc_embs.shape[0], -1)
             pooled = self.set_enc(anc_embs) if self.sample_paths != 1 else anc_embs
         elif self.pooler == "trf":
-            if self.use_rels != "joint":
-                pooled = self.set_enc(anc_embs.transpose(1, 0))  # output shape: (seq_len, bs, dim)
-            else:
-                pooled = self.set_enc(anc_embs.transpose(1, 0), src_key_padding_mask=mask)
+            pooled = self.set_enc(anc_embs.transpose(1, 0))  # output shape: (seq_len, bs, dim)
             pooled = pooled.mean(dim=0)  # output shape: (bs, dim)
 
         return pooled

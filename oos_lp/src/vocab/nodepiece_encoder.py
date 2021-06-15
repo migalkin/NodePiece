@@ -155,8 +155,6 @@ class NodePieceEncoder(nn.Module):
 
         torch.nn.init.xavier_uniform_(self.anchor_embeddings.weight)
         torch.nn.init.xavier_uniform_(self.dist_emb.weight)
-        if self.use_rels == "joint":
-            torch.nn.init.xavier_uniform_(self.node_types.weight)
 
         if self.random_hashes == 0:
             with torch.no_grad():
@@ -174,10 +172,7 @@ class NodePieceEncoder(nn.Module):
             anc_embs = anc_embs.view(anc_embs.shape[0], -1)
             pooled = self.set_enc(anc_embs) if self.sample_paths != 1 else anc_embs
         elif self.pooler == "trf":
-            if self.use_rels != "joint":
-                pooled = self.set_enc(anc_embs.transpose(1, 0))  # output shape: (seq_len, bs, dim)
-            else:
-                pooled = self.set_enc(anc_embs.transpose(1, 0), src_key_padding_mask=mask)
+            pooled = self.set_enc(anc_embs.transpose(1, 0))  # output shape: (seq_len, bs, dim)
             pooled = pooled.mean(dim=0)  # output shape: (bs, dim)
 
         return pooled
