@@ -15,7 +15,7 @@ Instead of shallow embedding every node to a vector, we first "tokenize" each no
 Then, the resulting hash sequence is encoded through any injective function, e.g., MLP or Transformer.
 
 Similar to Byte-Pair Encoding and WordPiece tokenizers commonly used in NLP, NodePiece can tokenize unseen nodes attached to the seen graph using the same anchor and relation vocabulary, which allows NodePiece to work out-of-the-box in the inductive settings using all the well-known scoring functions in the classical KG completion (like TransE or RotatE).
-NodePiece also works with GNNs (we tested on node classification, but not limited to it, of course)
+NodePiece also works with GNNs (we tested on node classification, but not limited to it, of course).
 
 ## NodePiece source code
 
@@ -35,13 +35,20 @@ wandb login <your_api_key>
 Using a GPU is recommended.
 
 First, run a script which will download all the necessary pre-processed data and datasets. 
-It takes approximately 1 GB.
+It takes approximately 1 GB. 
 ```
 sh download_data.sh
 ```
 
-Install the dependencies in `requirements.txt`.
-Note that when install Torch-Geometric you might want to use pre-compiled binaries for a certain version of python and torch. 
+We packed the pre-processed data for faster experimenting with the repo. 
+The pre-processing (and computing new anchor node vocabulary) can also be done relatively fast for most of the datasets right on a laptop (tested on M1 MacBook Pro / 8 GB):
+* FB15k-237: 2 min
+* WN18RR: 5 min
+
+CoDEX-Large and YAGO pre-processing are better run on a server with 16-32 GB RAM.
+
+Second, install the dependencies in `requirements.txt`.
+Note that when installing Torch-Geometric you might want to use pre-compiled binaries for a certain version of python and torch. 
 Check the manual [here](https://github.com/rusty1s/pytorch_geometric).
 
 In the link prediction tasks, all the necessary datasets will be downloaded upon first script execution.
@@ -151,4 +158,11 @@ python main.py -dataset FB15k-237 -model_name DM_NP_fb -ne 41 -lr 0.0005 -emb_di
 
 ```
 python main.py -dataset YAGO3-10 -model_name DM_NP_yago -ne 41 -lr 0.0005 -emb_dim 200 -batch_size 256 -simulated_batch_size 256 -save_each 100 -tokenize True -opt adam -pool trf -use_custom_reg False -reg_lambda 0.0 -loss_fc spl -margin 15 -neg_ratio 5 -wandb False -eval_every 20 -anchors 10000 -sample_rels 5
+```
+
+## Citation
+
+If you find this work useful, please consider citing the paper:
+```
+TODO
 ```
