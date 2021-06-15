@@ -45,7 +45,7 @@ The pre-processing (and computing new anchor node vocabulary) can also be done r
 * FB15k-237: 2 min
 * WN18RR: 5 min
 
-CoDEX-Large and YAGO pre-processing are better run on a server with 16-32 GB RAM.
+CoDEx-Large and YAGO pre-processing are better run on a server with 16-32 GB RAM and might take 2-4 hours depending on the chosen number of anchors.
 
 Second, install the dependencies in `requirements.txt`.
 Note that when installing Torch-Geometric you might want to use pre-compiled binaries for a certain version of python and torch. 
