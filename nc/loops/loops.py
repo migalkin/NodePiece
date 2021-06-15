@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from tqdm.autonotebook import tqdm
 from typing import Callable, Dict, Union
-from sampler import NodeClSampler
+from loops.sampler import NodeClSampler
 
 from utils.utils_mytorch import *
 from torch_geometric.data import Data

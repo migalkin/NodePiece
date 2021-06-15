@@ -99,6 +99,8 @@ STAREARGS = {
     'GCN_DIM': 80,
     'GCN_DROP': 0.1,
     'HID_DROP': 0.3,
+    'HID_DROP2': 0.1,
+    'FEAT_DROP': 0.3,
     'BIAS': False,
     'OPN': 'rotate',
     'TRIPLE_QUAL_WEIGHT': 0.8,
@@ -192,7 +194,8 @@ if __name__ == "__main__":
                                     "random": 0.2
                                 },
                                 num_anchors=config['NUM_ANCHORS'], dataset_name=config['DATASET'],
-                                limit_shortest=100, add_identity=False, mode="path", limit_random=0)
+                                limit_shortest=100, add_identity=False, mode="path", limit_random=0,
+                                relation2id=data['r2id'])
         if config['MAX_PATH_LEN'] == 0:
             config['MAX_PATH_LEN'] = kg_tokenizer.max_seq_len
     else:
