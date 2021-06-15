@@ -14,8 +14,10 @@ NodePiece is a "tokenizer" for reducing entity vocabulary size in knowledge grap
 Instead of shallow embedding every node to a vector, we first "tokenize" each node by K anchor nodes and M relation types in its relational context.
 Then, the resulting hash sequence is encoded through any injective function, e.g., MLP or Transformer.
 
+Similar to Byte-Pair Encoding and WordPiece tokenizers commonly used in NLP, NodePiece can tokenize unseen nodes attached to the seen graph using the same anchor and relation vocabulary, which allows NodePiece to work out-of-the-box in the inductive settings using all the well-known scoring functions in the classical KG completion (like TransE or RotatE).
+NodePiece also works with GNNs (we tested on node classification, but not limited to it, of course)
 
-# NodePiece source code
+## NodePiece source code
 
 The repo contains the code and experimental setups for reproducibility studies.
 
@@ -46,6 +48,8 @@ In the link prediction tasks, all the necessary datasets will be downloaded upon
 
 ## Link Prediction 
 
+The link prediction (LP) and relation prediction (RP) tasks use models, datasets, and evaluation protocols from [PyKEEN](https://github.com/pykeen/pykeen).
+
 Navigate to the `lp_rp` folder: `cd lp_rp`
 
 * Run the fb15k-237 experiment
@@ -72,7 +76,28 @@ python run_lp.py -loop lcwa -loss bce -b 256 -data codex_l -anchors 7000 -sp 100
 python run_lp.py -loop slcwa -loss nssal -margin 50 -b 512 -data yago -anchors 10000 -sp 100 -lr 0.00025 -ft_maxp 20 -pool cat -embedding 200 -subbatch 2000 -sample_rels 5 -negs 10 -epochs 601
 ```
 
+### Test evaluation reproducibility patch
+
+PyKEEN 1.0.5 used in this repo has been identified to have issues at the filtering stage when evaluating on the test set.
+In order to fully reproduce the reported test set numbers for transductive LP/RP experiments from the paper and resolve this issue, please apply the patch from the `lp_rp/patch` folder:
+1. Locate pykeen in your environment installation:
+```
+<path_to_env>/lib/python3.<NUMBER>/site-packages/pykeen
+```
+2. Replace the `evaluation/evaluator.py` with the one from the `patch` folder
+```bash
+cp ./lp_rp/patch/evaluator.py <path_to_env>/lib/python3.<NUMBER>/site-packages/pykeen/evaluation/
+```
+3. Replace the `stoppers/early_stopping.py` with the one from the `patch` folder
+```bash
+cp ./lp_rp/patch/early_stopping.py <path_to_env>/lib/python3.<NUMBER>/site-packages/pykeen/stoppers/
+```
+
+This won't be needed once we port the codebase to newest versions of PyKEEN (1.4.0+) where this was fixed
+
 ## Relation Prediction
+
+The setup is very similar to that of link prediction (LP) but we predict relations `(h,?,t)` now.
 
 Navigate to the `lp_rp` folder: `cd lp_rp`
 
