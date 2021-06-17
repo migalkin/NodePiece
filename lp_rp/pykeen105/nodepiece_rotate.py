@@ -36,6 +36,7 @@ class NodePieceRotate(Model):
                  nearest: bool = True,  # use only K nearest anchors per node
                  sample_rels: int = 0,  # size of the relational context
                  ablate_anchors: bool = False,  # for ablations - node hashes will be constructed only from the relational context
+                 tkn_mode: str = "path",  # default NodePiece vocabularization strategy
                  ):
 
         super().__init__(
@@ -51,6 +52,7 @@ class NodePieceRotate(Model):
         self.nearest = nearest
         self.sample_rels = sample_rels
         self.ablate_anchors = ablate_anchors
+        self.tkn_mode = tkn_mode
 
         # cat pooler - concat all anchors+relations in one big vector, pass through a 2-layer MLP
         if pooler == "cat":
@@ -99,34 +101,50 @@ class NodePieceRotate(Model):
         # now fix anchors per node for each node in a graph, either deterministically or randomly
         # we do it mostly for speed reasons, although this process can happen during the forward pass either
         if self.random_hashes == 0:
-            # DETERMINISTIC strategy
-            if not self.nearest:
-                # subsample paths, need to align them with distances
-                sampled_paths = {
-                    entity: random.sample(paths, k=min(self.sample_paths, len(paths)))
-                    for entity, paths in self.tokenizer.vocab.items()
-                }
-            elif self.nearest:
-                # sort paths by length first and take K of them
-                sampled_paths = {
-                    entity: sorted(paths, key=lambda x: len(x))[:min(self.sample_paths, len(paths))]
-                    for entity, paths in self.tokenizer.vocab.items()
-                }
-                self.max_seq_len = max(len(path) for k,v in sampled_paths.items() for path in v)
-                print(f"Changed max seq len from {max_seq_len} to {self.max_seq_len} after keeping {self.sample_paths} shortest paths")
+            if self.tkn_mode != "bfs":
+                # DETERMINISTIC strategy
+                if not self.nearest:
+                    # subsample paths, need to align them with distances
+                    sampled_paths = {
+                        entity: random.sample(paths, k=min(self.sample_paths, len(paths)))
+                        for entity, paths in self.tokenizer.vocab.items()
+                    }
+                elif self.nearest:
+                    # sort paths by length first and take K of them
+                    sampled_paths = {
+                        entity: sorted(paths, key=lambda x: len(x))[:min(self.sample_paths, len(paths))]
+                        for entity, paths in self.tokenizer.vocab.items()
+                    }
+                    self.max_seq_len = max(len(path) for k,v in sampled_paths.items() for path in v)
+                    print(f"Changed max seq len from {max_seq_len} to {self.max_seq_len} after keeping {self.sample_paths} shortest paths")
 
-            hashes = [
-                [self.tokenizer.token2id[path[0]] for path in paths] + [self.tokenizer.token2id[tokenizer.PADDING_TOKEN]]*(self.sample_paths - len(paths))
-                for entity, paths in sampled_paths.items()
-            ]
-            distances = [
-                [len(path)-1 for path in paths] + [0] *(self.sample_paths - len(paths))
-                for entity, paths in sampled_paths.items()
-            ]
-            total_paths = [
-                [len(paths)]
-                for entity, paths in sampled_paths.items()
-            ]
+                hashes = [
+                    [self.tokenizer.token2id[path[0]] for path in paths] + [self.tokenizer.token2id[tokenizer.PADDING_TOKEN]]*(self.sample_paths - len(paths))
+                    for entity, paths in sampled_paths.items()
+                ]
+                distances = [
+                    [len(path)-1 for path in paths] + [0] *(self.sample_paths - len(paths))
+                    for entity, paths in sampled_paths.items()
+                ]
+                total_paths = [
+                    [len(paths)]
+                    for entity, paths in sampled_paths.items()
+                ]
+            else:
+                # only nearest neighbors mode
+                if not self.nearest:
+                    raise NotImplementedError("bfs mode works only with -nn True")
+                hashes = [
+                    [self.tokenizer.token2id[token] for token in vals['ancs'][:min(self.sample_paths, len(vals['ancs']))]] + [self.tokenizer.token2id[tokenizer.PADDING_TOKEN]] * (self.sample_paths - len(vals['ancs']))
+                    for entity, vals in self.tokenizer.vocab.items()
+                ]
+                distances = [
+                    [d for d in vals['dists'][:min(self.sample_paths, len(vals['dists']))]] + [0] * (self.sample_paths - len(vals['dists']))
+                    for entity, vals in self.tokenizer.vocab.items()
+                ]
+                total_paths = distances
+                self.max_seq_len = max([d for row in distances for d in row])
+                print(f"Changed max seq len from {max_seq_len} to {self.max_seq_len} after keeping {self.sample_paths} shortest paths")
 
             self.hashes = torch.tensor(hashes, dtype=torch.long, device=self.device)
             self.distances = torch.tensor(distances, dtype=torch.long, device=self.device)

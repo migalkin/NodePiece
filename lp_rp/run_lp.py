@@ -64,7 +64,7 @@ random.seed(42)
 @click.option('-rand_hashes', '--random_hashing', type=int, default=0)  # for ablations: use only random numbers as hashes
 @click.option('-nn', '--nearest_neighbors', type=bool, default=True)  # use only nearest anchors per node
 @click.option('-sample_rels', '--sample_rels', type=int, default=4)  # size of the relational context M
-@click.option('-anchor_eye', '--anchor_eye', type=bool, default=True)  # anchors in their own hashes will have their index at the frist place
+@click.option('-anchor_eye', '--anchor_eye', type=bool, default=False)  # anchors in their own hashes will have their index at the frist place
 @click.option('-tkn_mode', '--tkn_mode', type=str, default="path")  # mining paths in iGRAPH
 @click.option('-no_anc', '--ablate_anchors', type=bool, default=False)  # don't use any anchors in hashes, keep only the relational context
 def main(
@@ -186,7 +186,7 @@ def main(
                                          hid_dim=transformer_hidden_dim, num_heads=transformer_num_heads,
                                          use_distances=use_anchor_distances, num_layers=transformer_layers, drop_prob=transformer_dropout,
                                          rel_policy=rel_policy, random_hashes=random_hashing, nearest=nearest_neighbors,
-                                         sample_rels=sample_rels, ablate_anchors=ablate_anchors)
+                                         sample_rels=sample_rels, ablate_anchors=ablate_anchors, tkn_mode=tkn_mode)
 
         optimizer = Adam(params=finetuning_model.parameters(), lr=learning_rate)
         print(f"Number of params: {sum(p.numel() for p in finetuning_model.parameters())}")

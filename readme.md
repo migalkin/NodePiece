@@ -41,11 +41,21 @@ sh download_data.sh
 ```
 
 We packed the pre-processed data for faster experimenting with the repo. 
-The pre-processing (and computing new anchor node vocabulary) can also be done relatively fast for most of the datasets right on a laptop (tested on M1 MacBook Pro / 8 GB):
-* FB15k-237: 2 min
-* WN18RR: 5 min
+Note that there are two NodePiece tokenization **modes** (`-tkn_mode [option]`): `path` and `bfs`:
+* `path` is an old tokenization strategy (based on finding shortest paths between each node and all anchors) under which we performed the experiments and packed the data for reproducibility;
+* `bfs` is a new strategy (based on iterative expansion of node's neighborhood until a desired number of anchors is reached) which is 5-50x faster and takes 4-5x less space depending on the KG. Currently, works for transductive LP/RP tasks;
 
-CoDEx-Large and YAGO pre-processing are better run on a server with 16-32 GB RAM and might take 2-4 hours depending on the chosen number of anchors.
+Pre-processing times tested on M1 MacBook Pro / 8 GB:
+
+| mode | FB15k-237  / vocab size  | WN18RR / vocab size  | YAGO 3-10 / vocab size |
+| ----- | ------ | ------ | ------ |
+| `path` | 2 min / 28 MB  | 5 min / 140 MB |  ~ 5 hours / 240 MB |
+| `bfs` | 8 sec  / 7.5 MB  | 30 sec / 20 MB | 4.5 min / 40 MB |
+
+
+CoDEx-Large and YAGO `path` pre-processing is better run on a server with 16-32 GB RAM and might take 2-5 hours depending on the chosen number of anchors.
+
+NB: we seek to further improve the algorithms to make the tokenization process even faster than the `bfs` strategy.
 
 Second, install the dependencies in `requirements.txt`.
 Note that when installing Torch-Geometric you might want to use pre-compiled binaries for a certain version of python and torch. 
@@ -57,7 +67,9 @@ In the link prediction tasks, all the necessary datasets will be downloaded upon
 
 The link prediction (LP) and relation prediction (RP) tasks use models, datasets, and evaluation protocols from [PyKEEN](https://github.com/pykeen/pykeen).
 
-Navigate to the `lp_rp` folder: `cd lp_rp`
+Navigate to the `lp_rp` folder: `cd lp_rp`.
+
+The list of CLI params can be found in `run_lp.py`.
 
 * Run the fb15k-237 experiment
 
@@ -106,7 +118,9 @@ This won't be needed once we port the codebase to newest versions of PyKEEN (1.4
 
 The setup is very similar to that of link prediction (LP) but we predict relations `(h,?,t)` now.
 
-Navigate to the `lp_rp` folder: `cd lp_rp`
+Navigate to the `lp_rp` folder: `cd lp_rp`.
+
+The list of CLI params can be found in `run_lp.py`
 
 * Run the fb15k-237 experiment
 
@@ -128,7 +142,9 @@ python run_lp.py -loop slcwa -loss nssal -b 512 -data yago -anchors 10000 -sp 10
 
 ## Node Classification
 
-Navigate to the `nc` folder: `cd nc`
+Navigate to the `nc` folder: `cd nc` .
+
+The list of CLI params can be found in `run_nc.py`
 
 If you have a GPU, use `DEVICE cuda` otherwise `DEVICE cpu`.
 
@@ -146,7 +162,9 @@ python run_nc.py DATASET wd50k MAX_QPAIRS 3 STATEMENT_LEN 3 LABEL_SMOOTHING 0.1 
 
 ## Out-of-sample Link Prediction
 
-Navigate to the `oos_lp` folder: `cd oos_lp/src`
+Navigate to the `oos_lp` folder: `cd oos_lp/src`.
+
+The list of CLI params can be found in `main.py`.
 
 * Run the oos fb15k-237 experiment
 

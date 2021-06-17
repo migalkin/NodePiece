@@ -71,8 +71,13 @@ class NodePiece_Tokenizer:
 
         if self.add_identity:
             # add identity for anchor nodes as the first / closest node
-            for anchor in self.top_entities[:-4]:  # last 4 are always service tokens
-                self.vocab[anchor] = [[anchor]] + self.vocab[anchor][:-1]
+            if self.tkn_mode != "bfs":
+                for anchor in self.top_entities[:-4]:  # last 4 are always service tokens
+                    self.vocab[anchor] = [[anchor]] + self.vocab[anchor][:-1]
+            else:
+                for anchor in self.top_entities[:-4]:
+                    self.vocab[anchor]['ancs'] = [anchor] + self.vocab[anchor]['ancs'][:-1]
+                    self.vocab[anchor]['dists'][0] = 0
 
 
 
@@ -86,6 +91,8 @@ class NodePiece_Tokenizer:
             filename += f"_{self.sp_limit}sp"  # for separating vocabs with limited mined shortest paths
         if self.rand_limit > 0:
             filename += f"_{self.rand_limit}rand"
+        if self.tkn_mode == "bfs":
+            filename += "_bfs"
         filename += ".pkl"
         self.model_name = filename.split('.pkl')[0]
         path = Path(filename)
@@ -144,6 +151,9 @@ class NodePiece_Tokenizer:
         else:
             print(f"Computing the entity vocabulary - paths, retaining {self.rand_limit} random paths per node")
 
+        if self.tkn_mode:
+            anc_set = set(top_entities)
+
         # single-threaded mining is found to be as fast as multi-processing + igraph for some reason, so let's use a dummy for-loop
         for i in tqdm(range(self.triples_factory.num_entities)):
             if self.tkn_mode == "path":
@@ -159,6 +169,22 @@ class NodePiece_Tokenizer:
                     random.shuffle(relation_paths)
                     relation_paths = relation_paths[:self.rand_limit]
                 vocab[i] = relation_paths
+            elif self.tkn_mode == "bfs":
+                # overall limit of anchors per node
+                limit = self.sp_limit if self.sp_limit != 0 else (self.rand_limit if self.rand_limit != 0 else self.num_paths)
+                nearest_ancs, anc_dists = [], []
+                hop = 1
+                while len(nearest_ancs) < limit:
+                    neigbs = graph.neighborhood(vertices=i, order=hop, mode="in", mindist=hop)  # get k-hop neighbors
+                    ancs = list(set(neigbs).intersection(anc_set).difference(set(nearest_ancs)))  # find anchors in this neighborhood
+                    nearest_ancs.extend(ancs)  # update the list of anchors
+                    anc_dists.extend([hop for _ in range(len(ancs))])  # update the list of anchor distances
+                    hop += 1
+                    if hop >= 50:  # hardcoded constant for a disconnected node
+                        nearest_ancs.extend([self.NOTHING_TOKEN for _ in range(limit - len(nearest_ancs))])
+                        anc_dists.extend([0 for _ in range(limit - len(anc_dists))])
+                        break
+                vocab[i] = {'ancs': nearest_ancs[:limit], 'dists': anc_dists[:limit]}  # update the vocabulary
             else:
                 raise NotImplementedError
 
