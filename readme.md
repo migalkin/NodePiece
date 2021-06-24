@@ -4,8 +4,8 @@
 <img src="https://img.shields.io/badge/python-3.8-blue.svg">
 <a href="https://github.com/migalkin/StarE/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-<a href="TODO"><img src="http://img.shields.io/badge/Paper-PDF-red.svg"></a>
-<a href="TODO"><img src="https://img.shields.io/badge/Blog-Medium-03a87c"></a>
+<a href="https://arxiv.org/abs/2106.12144"><img src="http://img.shields.io/badge/Paper-PDF-red.svg"></a>
+<a href="https://mgalkin.medium.com/nodepiece-tokenizing-knowledge-graphs-6dd2b91847aa"><img src="https://img.shields.io/badge/Blog-Medium-03a87c"></a>
 </p>
 
 <img src="./NodePiece_fig.svg" width="100%">
@@ -182,5 +182,12 @@ python main.py -dataset YAGO3-10 -model_name DM_NP_yago -ne 41 -lr 0.0005 -emb_d
 
 If you find this work useful, please consider citing the paper:
 ```
-TODO
+@misc{galkin2021nodepiece,
+    title={NodePiece: Compositional and Parameter-Efficient Representations of Large Knowledge Graphs},
+    author={Mikhail Galkin and Jiapeng Wu and Etienne Denis and William L. Hamilton},
+    year={2021},
+    eprint={2106.12144},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
 ```
