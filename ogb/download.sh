@@ -1,0 +1,1 @@
+wget -P ./data/ https://nodepiece-data.s3.ca-central-1.amazonaws.com/ogb-wikikg2/ogbl-wikikg2_20000_anchors_20000_paths_d0.4_b0.0_p0.4_r0.2_pykeen_50sp_bfs.pkl

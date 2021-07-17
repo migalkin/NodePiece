@@ -1,0 +1,1 @@
+python run_ogb.py --anchors 20000 --max_paths 20 --do_train --double_entity_embedding --double_relation_embedding -n 128 -adv --use_dists --model AutoSF --print_on_screen --cuda -lr 0.0001 --valid_steps 50000 --log_steps 10000 --max_steps 250000 --save_checkpoint_steps 1000000 --do_valid --inverses --test_log_steps 20000 --gamma 50 --sample_rels 12 -a 3.0 --val_inverses --do_test
