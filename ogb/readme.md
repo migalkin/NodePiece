@@ -4,6 +4,7 @@ The code to run NodePiece on the OGB WikiKG 2 dataset.
 
 * OGB repo: [github](https://github.com/snap-stanford/ogb/tree/master/examples/linkproppred/wikikg2)
 * Decoder models taken from the AutoSF repo: [github](https://github.com/AutoML-4Paradigm/AutoSF/tree/AutoSF-OGB/wikikg2)
+* Experiments executed on: Tesla V100 32GB, 64GB RAM 
 
 NodePiece dramatically reduces the entity embeddings matrix and can be used with standard decoders from the OGB Leaderboard.
 
