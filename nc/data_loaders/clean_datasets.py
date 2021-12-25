@@ -131,6 +131,12 @@ def load_clean_pyg(name, subtype, task, inductive="transductive", ind_v=None, ma
                        edge_index=torch.tensor(train_edge_index, dtype=torch.long),
                        edge_type=torch.tensor(train_edge_type, dtype=torch.long),
                        quals=torch.tensor(train_quals, dtype=torch.long) if train_quals is not None else None, y=train_y)
+
+    # explicit fix for PyG > 2.0 as its new data creation procedure uses setattr(obj, key, value) which does not
+    # assign None values, such that quals=None does not lead to creating the `quals` with value None
+    # so we explicitly set it to 0 - it won't affect any code execution whatsoever
+    if train_quals is None:
+        train_graph.quals = 0
     val_graph, test_graph = None, None
 
 
