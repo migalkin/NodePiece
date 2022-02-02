@@ -2,9 +2,9 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/python-3.8-blue.svg">
-<a href="https://github.com/migalkin/StarE/blob/master/LICENSE">
+<a href="https://github.com/migalkin/NodePiece/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-<a href="https://arxiv.org/abs/2106.12144"><img src="http://img.shields.io/badge/Paper-PDF-red.svg"></a>
+<a href="https://openreview.net/forum?id=xMJWUKJnFSw"><img src="http://img.shields.io/badge/Paper-PDF-red.svg"></a>
 <a href="https://mgalkin.medium.com/nodepiece-tokenizing-knowledge-graphs-6dd2b91847aa"><img src="https://img.shields.io/badge/Blog-Medium-03a87c"></a>
 </p>
 
@@ -17,6 +17,13 @@ Then, the resulting hash sequence is encoded through any injective function, e.g
 Similar to Byte-Pair Encoding and WordPiece tokenizers commonly used in NLP, NodePiece can tokenize unseen nodes attached to the seen graph using the same anchor and relation vocabulary, which allows NodePiece to work out-of-the-box in the inductive settings using all the well-known scoring functions in the classical KG completion (like TransE or RotatE).
 NodePiece also works with GNNs (we tested on node classification, but not limited to it, of course).
 
+## Updates
+
+* **NodePiece is now also implemented in [PyKEEN](https://github.com/pykeen/pykeen)!** Try it with 40+ KGE models on 30+ datasets!
+* **01.02.2022: New Inductive Link Prediction task!**
+* **20.01.2022: Accepted to ICLR 2022** 🎉
+* **25.12.2021: A NodePiece-powered model is Top-1 on the [OGB WikiKG 2](https://ogb.stanford.edu/docs/leader_linkprop/#ogbl-wikikg2)**
+* **17.07.2021: NodePiece for OGB WikiKG 2 (2.5M nodes)**
 ## NodePiece source code
 
 The repo contains the code and experimental setups for reproducibility studies.
@@ -25,6 +32,8 @@ Each experiment resides in the respective folder:
 * LP_RP - link prediction and relation prediction
 * NC - node classification
 * OOS_LP - out-of-sample link prediction
+* ogb - NodePiece version for the OGB WikiKG 2 benchmark
+* inductive_lp - inductive link prediction
 
 The repo is based on Python 3.8.
 `wandb` is an optional requirement in case you have an existing account there and would like to track experimental results.
@@ -114,6 +123,52 @@ cp ./lp_rp/patch/early_stopping.py <path_to_env>/lib/python3.<NUMBER>/site-packa
 
 This won't be needed once we port the codebase to newest versions of PyKEEN (1.4.0+) where this was fixed
 
+## Inductive Link Prediction
+The task is coined in the paper by Teru et al [Inductive relation prediction by subgraph reasoning](https://arxiv.org/abs/1911.06962).
+Training is executed on one graph, but inference link prediction is executed on a completely new graph
+with unseen entities (but known relations).
+
+NodePiece is inductive out-of-the-box and can be used for this task exactly in the same
+way as in the transductive link prediction tasks!
+
+See more details in the respective [README](/inductive_lp/README.md) to run inductive LP experiments.
+
+## Open Graph Benchmark (OGB)
+
+NodePiece made it to the tops of the [OGB WikiKG 2 leaderboard](https://ogb.stanford.edu/docs/leader_linkprop/#ogbl-wikikg2)
+powering models with a dramatically reduced parameter budget (7M vs 500-1500M).
+Instead of learning 2.5M entity embeddings, the current configuration needs only 20K anchor nodes.
+
+See the [README](/ogb/readme.md) in the respective folder to get the precomputed vocabulary and for more details.
+Our results on NodePiece + AutoSF from the paper:
+
+<table>
+    <tr>
+        <th>Model</th>
+        <th>Params</th>
+        <th>Node Tokenization</th>
+        <th>Test MRR</th>
+    </tr>
+    <tr>
+        <th>NodePiece</th>
+        <td>6.9M</td>
+        <td>20 anchors + 12 relations</td>
+        <td>0.570</td>
+    </tr>
+    <tr>
+        <th> -  w/o relations</th>
+        <td>5.9M</td>
+        <td>20 anchors</td>
+        <td>0.592</td>
+    </tr>
+    <tr>
+        <th> -  w/o anchors</th>
+        <td>1.3M</td>
+        <td>12 relations</td>
+        <td>0.476</td>
+    </tr>
+</table>
+
 ## Relation Prediction
 
 The setup is very similar to that of link prediction (LP) but we predict relations `(h,?,t)` now.
@@ -182,12 +237,12 @@ python main.py -dataset YAGO3-10 -model_name DM_NP_yago -ne 41 -lr 0.0005 -emb_d
 
 If you find this work useful, please consider citing the paper:
 ```
-@misc{galkin2021nodepiece,
-    title={NodePiece: Compositional and Parameter-Efficient Representations of Large Knowledge Graphs},
-    author={Mikhail Galkin and Jiapeng Wu and Etienne Denis and William L. Hamilton},
-    year={2021},
-    eprint={2106.12144},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{
+galkin2022nodepiece,
+title={NodePiece: Compositional and Parameter-Efficient Representations of Large Knowledge Graphs},
+author={Mikhail Galkin and Etienne Denis and Jiapeng Wu and William L. Hamilton},
+booktitle={International Conference on Learning Representations},
+year={2022},
+url={https://openreview.net/forum?id=xMJWUKJnFSw}
 }
 ```
